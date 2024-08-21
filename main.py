@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from automoto import (AutomatoFinitoNaoDeterministico, AutomatoFinitoDeterministico,
-                      converter_afn_para_afd, minimizar_afd, demonstrar_equivalencia)
+from automoto import (AFD, AFN, converter_afn_para_afd, minimizar_afd, verificar_equivalencia)
 
 class AutomatonApp:
     def __init__(self, root):
@@ -129,12 +128,12 @@ class AutomatonApp:
         estados_finais = set(self.answers[4].split())
 
         if self.questions[0] == "Digite os estados separados por espaço:":
-            self.afn = AutomatoFinitoNaoDeterministico(estados, alfabeto, transicoes, estado_inicial, estados_finais)
+            self.afn = AFD(estados, alfabeto, transicoes, estado_inicial, estados_finais)
             self.result_text.insert(tk.END, "AFN Criado com sucesso!\n")
             self.result_text.insert(tk.END, self.get_afn_string())
         else:
             transicoes_afd = {k: {kk: next(iter(vv)) for kk, vv in v.items()} for k, v in transicoes.items()}
-            self.afd = AutomatoFinitoDeterministico(estados, alfabeto, transicoes_afd, estado_inicial, estados_finais)
+            self.afd = AFN(estados, alfabeto, transicoes_afd, estado_inicial, estados_finais)
             self.result_text.insert(tk.END, "AFD Criado com sucesso!\n")
             self.result_text.insert(tk.END, self.get_afd_string())
 
@@ -165,9 +164,13 @@ class AutomatonApp:
             return
 
         palavras = self.entry_field.get().split()
-        resultado = demonstrar_equivalencia(self.afn, self.afd, palavras)
+        resultado = verificar_equivalencia(self.afn, self.afd, palavras)
+        if resultado:
+            mensagem = "A Equivalência com a palavra é verdadeira!!!"
+        else:
+            mensagem = "A Equivalência com a palavra é falsa!!!"
         self.result_text.insert(tk.END, "Equivalência demonstrada:\n")
-        self.result_text.insert(tk.END, resultado)
+        self.result_text.insert(tk.END, mensagem)
 
     def get_afn_string(self):
         if not self.afn:
