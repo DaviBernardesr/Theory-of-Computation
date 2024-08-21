@@ -33,14 +33,14 @@ def criar_afd():
 
 def imprimir_afd(afd):
     print("AFD:")
-    print("Estados:", [list(s) for s in afd.estados])
+    print("Estados:", afd.estados)
     print("Alfabeto:", afd.alfabeto)
     print("Transicoes:")
     for estado in afd.transicoes:
         for simbolo in afd.transicoes[estado]:
-            print(f"  {list(estado)} --{simbolo}--> {list(afd.transicoes[estado][simbolo])}")
-    print("Estado Inicial:", list(afd.estado_inicial))
-    print("Estados Finais:", [list(s) for s in afd.estados_finais])
+            print(f"  {estado} --{simbolo}--> {afd.transicoes[estado][simbolo]}")
+    print("Estado Inicial:", afd.estado_inicial)
+    print("Estados Finais:", afd.estados_finais)
     print()
 
 def criar_afn():
@@ -73,10 +73,10 @@ def imprimir_afn(afn):
     print()
 
 def converter_afn_para_afd(afn):
-    novos_estados = []
+    novos_estados = set()
     novas_transicoes = {}
     estado_inicial = frozenset([afn.estado_inicial])
-    novos_estados.append(estado_inicial)
+    novos_estados.add(estado_inicial)
     novas_transicoes[estado_inicial] = {}
 
     processar_estados = [estado_inicial]
@@ -97,7 +97,7 @@ def converter_afn_para_afd(afn):
                 novas_transicoes[estado_atual][simbolo] = novos_estados_atuais
 
                 if novos_estados_atuais not in novos_estados:
-                    novos_estados.append(novos_estados_atuais)
+                    novos_estados.add(novos_estados_atuais)
                     processar_estados.append(novos_estados_atuais)
 
                 if novos_estados_atuais & set(afn.estados_finais):
@@ -130,38 +130,29 @@ def simular_afd(afd, palavra):
             return False
     return estado_atual in afd.estados_finais
 
-# Func para verificar usando produto cartesiano
-def verificar_equivalencia(afn, afd, palavras=None):
-    # Produto cartesiano de estados
-    estados_produto = {(q1, q2) for q1 in afn.estados for q2 in afd.estados}
-    estado_inicial_produto = (afn.estado_inicial, afd.estado_inicial)
-    estados_finais_produto = {(q1, q2) for q1 in afn.estados_finais for q2 in afd.estados_finais}
+def verificar_equivalencia(afn, afd):
+    afd = minimizar_afd(afd)
 
-    # Transic do produto
-    transicoes_produto = {}
-    for (q1, q2) in estados_produto:
-        transicoes_produto[(q1, q2)] = {}
-        for simbolo in afn.alfabeto.intersection(afd.alfabeto):
-            destino_q1 = afn.transicoes.get(q1, {}).get(simbolo, None)
-            destino_q2 = afd.transicoes.get(q2, {}).get(simbolo, None)
-            if destino_q1 and destino_q2:
-                transicoes_produto[(q1, q2)][simbolo] = (next(iter(destino_q1)), destino_q2)
+    def executa_afd(estado_inicial, transicoes, palavra):
+        estado_atual = estado_inicial
+        for simbolo in palavra:
+            if simbolo in transicoes.get(estado_atual, {}):
+                estado_atual = transicoes[estado_atual][simbolo]
+            else:
+                return False
+        return estado_atual in afd.estados_finais
 
-    # Verificar se e aceito
-    visitados = set()
-    a_visitar = [estado_inicial_produto]
+    def gera_palavras(alfabeto):
+        from itertools import product
+        for i in range(1, 10):  # Limite do comprimento das palavras
+            for palavra in product(alfabeto, repeat=i):
+                yield ''.join(palavra)
 
-    while a_visitar:
-        (q1_atual, q2_atual) = a_visitar.pop()
-        if (q1_atual in afn.estados_finais) != (q2_atual in afd.estados_finais):
-            return False  # AFN e AFD não são equivalentes
-        visitados.add((q1_atual, q2_atual))
-        for simbolo in afn.alfabeto.intersection(afd.alfabeto):
-            proximo_estado = transicoes_produto.get((q1_atual, q2_atual), {}).get(simbolo, None)
-            if proximo_estado and proximo_estado not in visitados:
-                a_visitar.append(proximo_estado)
-
-    return True  # AFN e AFD são equivalentes
+    for palavra in gera_palavras(afd.alfabeto):
+        if executa_afd(afd.estado_inicial, afd.transicoes, palavra) != \
+           simular_afn(afn, palavra):
+            return False
+    return True
 
 def minimizar_afd(afd):
     P = [afd.estados_finais, set(afd.estados) - set(afd.estados_finais)]
@@ -200,7 +191,7 @@ def minimizar_afd(afd):
         estado_representante = next(iter(particao))
         novas_transicoes[particao] = {}
         for simbolo in afd.alfabeto:
-            if simbolo in afd.transicoes[estado_representante]:
+            if simbolo in afd.transicoes.get(estado_representante, {}):
                 estado_destino = afd.transicoes[estado_representante][simbolo]
                 for destino in novos_estados:
                     if estado_destino in destino:

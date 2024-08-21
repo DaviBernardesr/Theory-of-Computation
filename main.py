@@ -128,12 +128,12 @@ class AutomatonApp:
         estados_finais = set(self.answers[4].split())
 
         if self.questions[0] == "Digite os estados separados por espaço:":
-            self.afn = AFD(estados, alfabeto, transicoes, estado_inicial, estados_finais)
+            self.afn = AFN(estados, alfabeto, transicoes, estado_inicial, estados_finais)
             self.result_text.insert(tk.END, "AFN Criado com sucesso!\n")
             self.result_text.insert(tk.END, self.get_afn_string())
         else:
             transicoes_afd = {k: {kk: next(iter(vv)) for kk, vv in v.items()} for k, v in transicoes.items()}
-            self.afd = AFN(estados, alfabeto, transicoes_afd, estado_inicial, estados_finais)
+            self.afd = AFD(estados, alfabeto, transicoes_afd, estado_inicial, estados_finais)
             self.result_text.insert(tk.END, "AFD Criado com sucesso!\n")
             self.result_text.insert(tk.END, self.get_afd_string())
 
@@ -163,12 +163,11 @@ class AutomatonApp:
             messagebox.showerror("Erro", "Crie um AFN e converta-o para AFD antes de demonstrar equivalência.")
             return
 
-        palavras = self.entry_field.get().split()
-        resultado = verificar_equivalencia(self.afn, self.afd, palavras)
+        resultado = verificar_equivalencia(self.afn, self.afd)
         if resultado:
-            mensagem = "A Equivalência com a palavra é verdadeira!!!"
+            mensagem = "AFN e AFD são equivalentes!"
         else:
-            mensagem = "A Equivalência com a palavra é falsa!!!"
+            mensagem = "AFN e AFD não são equivalentes."
         self.result_text.insert(tk.END, "Equivalência demonstrada:\n")
         self.result_text.insert(tk.END, mensagem)
 
@@ -201,7 +200,6 @@ class AutomatonApp:
         # Converte cada frozenset em string antes de usar join
         result += f"Estados Finais: {', '.join(map(lambda s: str(s), self.afd.estados_finais))}\n"
         return result
-
 
 if __name__ == "__main__":
     root = tk.Tk()
