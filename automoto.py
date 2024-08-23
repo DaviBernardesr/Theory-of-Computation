@@ -1,136 +1,188 @@
 class AFD:
-    def __init__(self, estados, alfabeto, transicoes, estado_inicial, estados_finais):
-        self.estados = estados
-        self.alfabeto = alfabeto
-        self.transicoes = transicoes
-        self.estado_inicial = estado_inicial
-        self.estados_finais = estados_finais
+    def __init__(self, ests, alfa, trans, ini, fins):
+        self.ests = ests
+        self.alfa = alfa
+        self.trans = trans
+        self.ini = ini
+        self.fins = fins
 
 class AFN:
-    def __init__(self, estados, alfabeto, transicoes, estado_inicial, estados_finais):
-        self.estados = estados
-        self.alfabeto = alfabeto
-        self.transicoes = transicoes
-        self.estado_inicial = estado_inicial
-        self.estados_finais = estados_finais
+    def __init__(self, ests, alfa, trans, ini, fins):
+        self.ests = ests
+        self.alfa = alfa
+        self.trans = trans
+        self.ini = ini
+        self.fins = fins
 
 def criar_afd():
-    estados = set(input("Digite os estados separados por espaco: ").split())
-    alfabeto = set(input("Digite o alfabeto separado por espaco: ").split())
-    transicoes = {estado: {} for estado in estados}
+    ests = set(input("Estados (separados por espaço): ").split())
+    alfa = set(input("Alfabeto (separado por espaço): ").split())
+    trans = {est: {} for est in ests}
 
-    for estado in estados:
-        print(f"Definindo transicoes para o estado {estado}:")
-        for simbolo in alfabeto:
-            destino = input(f"  Destino para a transicao {estado} --{simbolo}--> (deixe em branco para nenhum): ")
-            if destino:
-                transicoes[estado][simbolo] = destino
+    for est in ests:
+        print(f"Transições para {est}:")
+        for simb in alfa:
+            dest = input(f"  {est} --{simb}--> (vazio para nenhum): ")
+            if dest:
+                trans[est][simb] = dest
 
-    estado_inicial = input("Digite o estado inicial: ")
-    estados_finais = set(input("Digite os estados finais separados por espaco: ").split())
+    ini = input("Estado inicial: ")
+    fins = set(input("Estados finais (separados por espaço): ").split())
 
-    return AFD(estados, alfabeto, transicoes, estado_inicial, estados_finais)
+    return AFD(ests, alfa, trans, ini, fins)
+
+def criar_afn():
+    ests = set(input("Estados (separados por espaço): ").split())
+    alfa = set(input("Alfabeto (separado por espaço): ").split())
+    trans = {est: {} for est in ests}
+
+    for est in ests:
+        print(f"Transições para {est}:")
+        for simb in alfa:
+            dests = set(input(f"  {est} --{simb}--> (separados por espaço, vazio para nenhum): ").split())
+            if dests:
+                trans[est][simb] = dests
+
+    ini = input("Estado inicial: ")
+    fins = set(input("Estados finais (separados por espaço): ").split())
+
+    return AFN(ests, alfa, trans, ini, fins)
+
+def afn_para_afd(afn):
+    novos_ests = set()
+    novas_trans = {}
+    ini = frozenset([afn.ini])
+    novos_ests.add(ini)
+    novas_trans[ini] = {}
+
+    a_processar = [ini]
+    fins = set()
+
+    while a_processar:
+        atual = a_processar.pop()
+        novas_trans[atual] = {}
+
+        for simb in afn.alfa:
+            novos_atuais = set()
+            for sub in atual:
+                if sub in afn.trans and simb in afn.trans[sub]:
+                    novos_atuais.update(afn.trans[sub][simb])
+            novos_atuais = frozenset(novos_atuais)
+
+            if novos_atuais:
+                novas_trans[atual][simb] = novos_atuais
+
+                if novos_atuais not in novos_ests:
+                    novos_ests.add(novos_atuais)
+                    a_processar.append(novos_atuais)
+
+                if novos_atuais & set(afn.fins):
+                    fins.add(novos_atuais)
+
+    return AFD(
+        ests=novos_ests,
+        alfa=afn.alfa,
+        trans=novas_trans,
+        ini=ini,
+        fins=fins
+    )
 
 def imprimir_afd(afd):
     print("AFD:")
-    print("Estados:", afd.estados)
-    print("Alfabeto:", afd.alfabeto)
-    print("Transicoes:")
-    for estado in afd.transicoes:
-        for simbolo in afd.transicoes[estado]:
-            print(f"  {estado} --{simbolo}--> {afd.transicoes[estado][simbolo]}")
-    print("Estado Inicial:", afd.estado_inicial)
-    print("Estados Finais:", afd.estados_finais)
+    print("Estados:", afd.ests)
+    print("Alfabeto:", afd.alfa)
+    print("Transições:")
+    for est in afd.trans:
+        for simb in afd.trans[est]:
+            print(f"  {est} --{simb}--> {afd.trans[est][simb]}")
+    print("Estado Inicial:", afd.ini)
+    print("Estados Finais:", afd.fins)
     print()
-
-def criar_afn():
-    estados = set(input("Digite os estados separados por espaco: ").split())
-    alfabeto = set(input("Digite o alfabeto separado por espaco: ").split())
-    transicoes = {estado: {} for estado in estados}
-
-    for estado in estados:
-        print(f"Definindo transicoes para o estado {estado}:")
-        for simbolo in alfabeto:
-            destinos = set(input(f"  Destinos para a transicao {estado} --{simbolo}--> (separe por espaco, deixe em branco para nenhum): ").split())
-            if destinos:
-                transicoes[estado][simbolo] = destinos
-
-    estado_inicial = input("Digite o estado inicial: ")
-    estados_finais = set(input("Digite os estados finais separados por espaco: ").split())
-
-    return AFN(estados, alfabeto, transicoes, estado_inicial, estados_finais)
 
 def imprimir_afn(afn):
     print("AFN:")
-    print("Estados:", afn.estados)
-    print("Alfabeto:", afn.alfabeto)
-    print("Transicoes:")
-    for estado, transicoes in afn.transicoes.items():
-        for simbolo, destinos in transicoes.items():
-            print(f"  {estado} --{simbolo}--> {destinos}")
-    print("Estado Inicial:", afn.estado_inicial)
-    print("Estados Finais:", afn.estados_finais)
+    print("Estados:", afn.ests)
+    print("Alfabeto:", afn.alfa)
+    print("Transições:")
+    for est, trans in afn.trans.items():
+        for simb, dests in trans.items():
+            print(f"  {est} --{simb}--> {dests}")
+    print("Estado Inicial:", afn.ini)
+    print("Estados Finais:", afn.fins)
     print()
 
-def converter_afn_para_afd(afn):
-    novos_estados = set()
-    novas_transicoes = {}
-    estado_inicial = frozenset([afn.estado_inicial])
-    novos_estados.add(estado_inicial)
-    novas_transicoes[estado_inicial] = {}
-
-    processar_estados = [estado_inicial]
-    estados_finais = set()
-
-    while processar_estados:
-        estado_atual = processar_estados.pop()
-        novas_transicoes[estado_atual] = {}
-
-        for simbolo in afn.alfabeto:
-            novos_estados_atuais = set()
-            for subestado in estado_atual:
-                if subestado in afn.transicoes and simbolo in afn.transicoes[subestado]:
-                    novos_estados_atuais.update(afn.transicoes[subestado][simbolo])
-            novos_estados_atuais = frozenset(novos_estados_atuais)
-
-            if novos_estados_atuais:
-                novas_transicoes[estado_atual][simbolo] = novos_estados_atuais
-
-                if novos_estados_atuais not in novos_estados:
-                    novos_estados.add(novos_estados_atuais)
-                    processar_estados.append(novos_estados_atuais)
-
-                if novos_estados_atuais & set(afn.estados_finais):
-                    estados_finais.add(novos_estados_atuais)
-
-    return AFD(
-        estados=novos_estados,
-        alfabeto=afn.alfabeto,
-        transicoes=novas_transicoes,
-        estado_inicial=estado_inicial,
-        estados_finais=estados_finais
-    )
-
 def simular_afn(afn, palavra):
-    estados_atuais = {afn.estado_inicial}
-    for simbolo in palavra:
-        novos_estados = set()
-        for estado in estados_atuais:
-            if estado in afn.transicoes and simbolo in afn.transicoes[estado]:
-                novos_estados.update(afn.transicoes[estado][simbolo])
-        estados_atuais = novos_estados
-    return bool(estados_atuais & afn.estados_finais)
+    atuais = {afn.ini}
+    for simb in palavra:
+        novos = set()
+        for est in atuais:
+            if est in afn.trans and simb in afn.trans[est]:
+                novos.update(afn.trans[est][simb])
+        atuais = novos
+    return bool(atuais & afn.fins)
 
 def simular_afd(afd, palavra):
-    estado_atual = afd.estado_inicial
-    for simbolo in palavra:
-        if estado_atual in afd.transicoes and simbolo in afd.transicoes[estado_atual]:
-            estado_atual = afd.transicoes[estado_atual][simbolo]
+    atual = afd.ini
+    for simb in palavra:
+        if atual in afd.trans and simb in afd.trans[atual]:
+            atual = afd.trans[atual][simb]
         else:
             return False
-    return estado_atual in afd.estados_finais
+    return atual in afd.fins
 
-def verificar_equivalencia(afn, afd):
+def minimizar_afd(afd):
+    P = [afd.fins, set(afd.ests) - set(afd.fins)]
+    W = [afd.fins]
+
+    while W:
+        A = W.pop()
+        for simb in afd.alfa:
+            X = set()
+            for est in afd.ests:
+                if simb in afd.trans.get(est, {}) and afd.trans[est][simb] in A:
+                    X.add(est)
+            for Y in P[:]:
+                inter = X & Y
+                dif = Y - X
+                if inter and dif:
+                    P.remove(Y)
+                    P.append(inter)
+                    P.append(dif)
+                    if Y in W:
+                        W.remove(Y)
+                        W.append(inter)
+                        W.append(dif)
+                    else:
+                        if len(inter) <= len(dif):
+                            W.append(inter)
+                        else:
+                            W.append(dif)
+
+    novos_ests = {frozenset(part) for part in P}
+    novo_ini = next(part for part in novos_ests if afd.ini in part)
+    novos_fins = {part for part in novos_ests if part & afd.fins}
+
+    novas_trans = {}
+    for part in novos_ests:
+        rep = next(iter(part))
+        novas_trans[part] = {}
+        for simb in afd.alfa:
+            if simb in afd.trans.get(rep, {}):
+                dest = afd.trans[rep][simb]
+                for part_dest in novos_ests:
+                    if dest in part_dest:
+                        novas_trans[part][simb] = part_dest
+                        break
+
+    return AFD(
+        ests=novos_ests,
+        alfa=afd.alfa,
+        trans=novas_trans,
+        ini=novo_ini,
+        fins=novos_fins
+    )
+
+def verifica_equivalencia(afn, afd):
     afd = minimizar_afd(afd)
 
     def executa_afd(estado_inicial, transicoes, palavra):
@@ -140,7 +192,7 @@ def verificar_equivalencia(afn, afd):
                 estado_atual = transicoes[estado_atual][simbolo]
             else:
                 return False
-        return estado_atual in afd.estados_finais
+        return estado_atual in afd.fins
 
     def gera_palavras(alfabeto):
         from itertools import product
@@ -148,60 +200,8 @@ def verificar_equivalencia(afn, afd):
             for palavra in product(alfabeto, repeat=i):
                 yield ''.join(palavra)
 
-    for palavra in gera_palavras(afd.alfabeto):
-        if executa_afd(afd.estado_inicial, afd.transicoes, palavra) != \
+    for palavra in gera_palavras(afd.alfa):  # Atualize para usar `afd.alfa`
+        if executa_afd(afd.ini, afd.trans, palavra) != \
            simular_afn(afn, palavra):
             return False
     return True
-
-def minimizar_afd(afd):
-    P = [afd.estados_finais, set(afd.estados) - set(afd.estados_finais)]
-    W = [afd.estados_finais]
-
-    while W:
-        A = W.pop()
-        for simbolo in afd.alfabeto:
-            X = set()
-            for estado in afd.estados:
-                if simbolo in afd.transicoes.get(estado, {}) and afd.transicoes[estado][simbolo] in A:
-                    X.add(estado)
-            for Y in P[:]:
-                interseccao = X & Y
-                diferenca = Y - X
-                if interseccao and diferenca:
-                    P.remove(Y)
-                    P.append(interseccao)
-                    P.append(diferenca)
-                    if Y in W:
-                        W.remove(Y)
-                        W.append(interseccao)
-                        W.append(diferenca)
-                    else:
-                        if len(interseccao) <= len(diferenca):
-                            W.append(interseccao)
-                        else:
-                            W.append(diferenca)
-
-    novos_estados = {frozenset(particao) for particao in P}
-    novo_estado_inicial = next(particao for particao in novos_estados if afd.estado_inicial in particao)
-    novos_estados_finais = {particao for particao in novos_estados if particao & afd.estados_finais}
-
-    novas_transicoes = {}
-    for particao in novos_estados:
-        estado_representante = next(iter(particao))
-        novas_transicoes[particao] = {}
-        for simbolo in afd.alfabeto:
-            if simbolo in afd.transicoes.get(estado_representante, {}):
-                estado_destino = afd.transicoes[estado_representante][simbolo]
-                for destino in novos_estados:
-                    if estado_destino in destino:
-                        novas_transicoes[particao][simbolo] = destino
-                        break
-
-    return AFD(
-        estados=novos_estados,
-        alfabeto=afd.alfabeto,
-        transicoes=novas_transicoes,
-        estado_inicial=novo_estado_inicial,
-        estados_finais=novos_estados_finais
-    )

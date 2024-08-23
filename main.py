@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from automoto import (AFD, AFN, converter_afn_para_afd, minimizar_afd, verificar_equivalencia)
+from automoto import (AFD, AFN, afn_para_afd, minimizar_afd, verifica_equivalencia)
 
 class AutomatonApp:
     def __init__(self, root):
@@ -143,7 +143,7 @@ class AutomatonApp:
             messagebox.showerror("Erro", "Primeiro crie um AFN.")
             return
 
-        self.afd = converter_afn_para_afd(self.afn)
+        self.afd = afn_para_afd(self.afn)
         self.result_text.insert(tk.END, "AFN convertido para AFD com sucesso!\n")
         self.result_text.insert(tk.END, self.get_afd_string())
 
@@ -163,7 +163,7 @@ class AutomatonApp:
             messagebox.showerror("Erro", "Crie um AFN e converta-o para AFD antes de demonstrar equivalência.")
             return
 
-        resultado = verificar_equivalencia(self.afn, self.afd)
+        resultado = verifica_equivalencia(self.afn, self.afd)
         if resultado:
             mensagem = "AFN e AFD são equivalentes!"
         else:
@@ -175,30 +175,28 @@ class AutomatonApp:
         if not self.afn:
             return ""
         result = "AFN:\n"
-        result += f"Estados: {', '.join(self.afn.estados)}\n"
-        result += f"Alfabeto: {', '.join(self.afn.alfabeto)}\n"
+        result += f"Estados: {', '.join(self.afn.ests)}\n"
+        result += f"Alfabeto: {', '.join(self.afn.alfa)}\n"
         result += "Transições:\n"
-        for estado, trans in self.afn.transicoes.items():
+        for estado, trans in self.afn.trans.items():
             for simbolo, destinos in trans.items():
                 result += f"  {estado} --{simbolo}--> {', '.join(destinos)}\n"
-        result += f"Estado inicial: {self.afn.estado_inicial}\n"
-        result += f"Estados finais: {', '.join(self.afn.estados_finais)}\n"
+        result += f"Estado inicial: {self.afn.ini}\n"
+        result += f"Estados finais: {', '.join(self.afn.fins)}\n"
         return result
 
     def get_afd_string(self):
         if not self.afd:
             return ""
         result = "AFD:\n"
-        # Converte cada frozenset em string antes de usar join
-        result += f"Estados: {', '.join(map(lambda s: str(s), self.afd.estados))}\n"
-        result += f"Alfabeto: {', '.join(self.afd.alfabeto)}\n"
+        result += f"Estados: {', '.join(map(str, self.afd.ests))}\n"
+        result += f"Alfabeto: {', '.join(self.afd.alfa)}\n"
         result += "Transições:\n"
-        for estado, transicoes in self.afd.transicoes.items():
+        for estado, transicoes in self.afd.trans.items():
             for simbolo, destino in transicoes.items():
                 result += f"  {estado} --{simbolo}--> {destino}\n"
-        result += f"Estado Inicial: {self.afd.estado_inicial}\n"
-        # Converte cada frozenset em string antes de usar join
-        result += f"Estados Finais: {', '.join(map(lambda s: str(s), self.afd.estados_finais))}\n"
+        result += f"Estado Inicial: {self.afd.ini}\n"
+        result += f"Estados Finais: {', '.join(map(str, self.afd.fins))}\n"
         return result
 
 if __name__ == "__main__":
