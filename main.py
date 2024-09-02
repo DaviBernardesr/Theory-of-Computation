@@ -10,17 +10,15 @@ class TheoryApp:
         self.root.title("Automaton Simulator")
         self.root.geometry("800x800")
 
-        # Variáveis
         self.afn = None
         self.afd = None
         self.tm = None
-        self.current_mode = None  # Adicionando esta variável para rastrear o modo atual
+        self.current_mode = None
 
         # Interface
         self.create_widgets()
 
     def create_widgets(self):
-        # Botões
         button_frame = tk.Frame(self.root)
         button_frame.pack(pady=20)
 
@@ -140,7 +138,7 @@ class TheoryApp:
             self.entry_field.delete(0, tk.END)
             self.entry_field.focus_set()
 
-        elif self.current_question == 2 and self.current_mode in ["AFN", "AFD"]:  # Pergunta das transições para AFN/AFD
+        elif self.current_question == 2 and self.current_mode in ["AFN", "AFD"]:  
             self.temp_transitions.append(answer)
             self.result_text.insert(tk.END, f"Transição adicionada: {answer}\n")
             self.entry_field.delete(0, tk.END)
@@ -167,17 +165,17 @@ class TheoryApp:
         alfabeto_fita = set(self.answers[2].split())
         transicoes_input = self.answers[3]
 
-        # Construir o dicionário de transições
+        # Construir o dicionario de transições
         transicoes = {}
         for trans in transicoes_input:
             if len(trans.split()) == 5:
                 estado, simbolo, prox_estado, simbolo_escrita, direcao = trans.split()
-                # Adiciona a transição ao dicionário
+                # Adiciona a transic ao discionario
                 transicoes[(estado, simbolo)] = (prox_estado, simbolo_escrita, direcao)
 
-        estado_inicial = self.answers[4]  # Estado inicial
-        estado_aceitacao = self.answers[5]  # Estado de aceitação
-        estado_rejeicao = self.answers[6]  # Estado de rejeição
+        estado_inicial = self.answers[4]  
+        estado_aceitacao = self.answers[5]  
+        estado_rejeicao = self.answers[6]  
 
         self.tm = TuringMachine(estados, alfabeto, alfabeto_fita, transicoes, estado_inicial, estado_aceitacao,
                                 estado_rejeicao)
