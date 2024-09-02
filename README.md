@@ -8,6 +8,7 @@ Conversão de AFN para AFD: Implementa o algoritmo de conversão de um AFN em um
 Minimização de AFD: Implementa o algoritmo de minimização de um AFD para reduzir o número de estados.
 Simulação de Aceitação de Palavras: Simula a aceitação de palavras por AFNs e AFDs.
 Demonstração de Equivalência: Compara a aceitação de palavras entre um AFN e um AFD para verificar se são equivalentes.
+Criação de Máquina de Turing, funcional 100%.
 
 Requisitos:
 Python 3.x

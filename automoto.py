@@ -200,7 +200,7 @@ def verifica_equivalencia(afn, afd):
             for palavra in product(alfabeto, repeat=i):
                 yield ''.join(palavra)
 
-    for palavra in gera_palavras(afd.alfa):  # Atualize para usar `afd.alfa`
+    for palavra in gera_palavras(afd.alfa):
         if executa_afd(afd.ini, afd.trans, palavra) != \
            simular_afn(afn, palavra):
             return False
